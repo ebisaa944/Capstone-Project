@@ -1,51 +1,105 @@
 # Capstone-Project
 
-Movie Review API
-This is a Django REST Framework-based API that allows users to create, read, update, and delete movie reviews. It integrates with an external API to fetch movie details and provides features for user authentication, liking reviews, and advanced data filtering.
+# 🎬 Movie Review API  
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)  
+![Django](https://img.shields.io/badge/Django-5.2-green.svg)  
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-Features
-Authentication: Users can sign up and log in to manage their own reviews.
+A Django REST Framework-based API that allows users to **create, read, update, and delete movie reviews**.  
+It integrates with the OMDB API to fetch movie details and includes **authentication, liking, comments, and advanced filtering** features.  
 
-Movie Management: Movies are automatically created and populated with details from the OMDB API when a review is submitted for a new movie.
+---
 
-Reviews: Authenticated users can create, view, update, and delete their movie reviews.
+## 🚀 Features
 
-Engagement: Users can "like" other users' reviews and post comments.
+- **Authentication:** Users can sign up and log in to manage their own reviews.  
+- **Movie Management:** Movies are auto-created with details fetched from the OMDB API.  
+- **Reviews:** Authenticated users can create, view, update, and delete their reviews.  
+- **Engagement:** Users can like reviews and post comments.  
+- **Advanced Filtering:** Search and filter reviews by title, comment, rating, or review date.  
+- **Scalability:** Custom pagination ensures lightweight API responses.  
+- **Security:** Custom permissions ensure users can only modify their own reviews.  
 
-Advanced Filtering: Reviews can be filtered by rating or movie title, searched by title or comment, and ordered by rating or review date.
+---
 
-Scalability: The API uses custom pagination to ensure responses are efficient and not too large.
+## 🛠️ Technologies Used
 
-Security: A custom permission class ensures users can only modify their own reviews.
+- **Django** – Web framework  
+- **Django REST Framework (DRF)** – API toolkit  
+- **Django-Filter** – Advanced filtering support  
+- **Requests** – HTTP client for external API calls  
 
-Technologies Used
-Django: The web framework used to build the application.
+---
 
-Django REST Framework (DRF): The toolkit used to create the API.
+## ⚙️ Installation
 
-Django-Filter: Used for advanced filtering capabilities.
+Follow these steps to set up the project locally:  
 
-Requests: A library for making HTTP requests to external APIs.
-
-Installation
-Follow these steps to get a copy of the project up and running on your local machine.
-
-Clone the repository:
-
+### 1. Clone the repository
+```bash
 git clone https://github.com/ebisaa944/Capstone-Project.git
 cd Movie_Review_API
-
-Create and activate a virtual environment:
-
+2. Create and activate a virtual environment
+bash
+Copy code
 python -m venv venv
-# On Windows
+On Windows:
+
+bash
+Copy code
 .\venv\Scripts\activate
-# On macOS/Linux
+On macOS/Linux:
+
+bash
+Copy code
 source venv/bin/activate
+3. Install dependencies
+bash
+Copy code
+pip install -r requirements.txt
+4. Set up environment variables
+In movie_review_project/settings.py, configure your OMDB_API_KEY.
 
-Install dependencies:
-Create a requirements.txt file with the following contents, then install them:
+5. Apply migrations
+bash
+Copy code
+python manage.py migrate
+6. Create a superuser
+bash
+Copy code
+python manage.py createsuperuser
+7. Run the development server
+bash
+Copy code
+python manage.py runserver
+Your API will be live at:
+👉 http://127.0.0.1:8000/
 
+📡 API Endpoints
+Endpoint	Method	Description
+/api/movies/	GET	List all movies
+/api/movies/	POST	Create a new movie from OMDB API
+/api/movies/<id>/reviews/	GET	Get all reviews for a specific movie
+/api/reviews/	GET	List all reviews (with filtering & search)
+/api/reviews/	POST	Create a new review (requires authentication)
+/api/reviews/<id>/	PUT/PATCH/DELETE	Update or delete a review
+/api/reviews/<id>/like/	POST	Like a review
+/api/users/	GET	List all users
+
+👨‍💻 Author
+Ebisa Achame Mihirate
+
+📜 License
+This project is licensed under the MIT License.
+
+yaml
+Copy code
+
+---
+
+### 📄 Final `requirements.txt`
+
+```text
 asgiref==3.9.1
 certifi==2025.8.3
 charset-normalizer==3.4.3
@@ -57,83 +111,11 @@ requests==2.32.4
 sqlparse==0.5.3
 tzdata==2025.2
 urllib3==2.5.0
-```bash
-pip install -r requirements.txt
+🚀 One-Step Git Commit & Push
+Run these commands to stage, commit, and push everything together:
 
-Set up your environment variables:
-In movie_review_project/settings.py, ensure your OMDB_API_KEY is set.
-
-Run database migrations:
-
-python manage.py migrate
-
-Create a superuser to access the admin panel:
-
-python manage.py createsuperuser
-
-Run the development server:
-
-python manage.py runserver
-
-The API will be running at http://127.0.0.1:8000/.
-
-API Endpoints
-Endpoint
-
-Method
-
-Description
-
-/api/movies/
-
-GET
-
-List all movies.
-
-/api/movies/
-
-POST
-
-Create a new movie entry from an external API.
-
-/api/movies/<id>/reviews/
-
-GET
-
-Get all reviews for a specific movie.
-
-/api/reviews/
-
-GET
-
-List all reviews. Supports filtering, searching, and ordering.
-
-/api/reviews/
-
-POST
-
-Create a new review (requires authentication).
-
-/api/reviews/<id>/
-
-PUT/PATCH/DELETE
-
-Update or delete a specific review.
-
-/api/reviews/<id>/like/
-
-POST
-
-Like a specific review.
-
-/api/users/
-
-GET
-
-List all users.
-
-Author
-Ebisa
-
-License
-This project is licensed under the MIT License.
+bash
+Copy code
+git add README.md requirements.txt
+git commit -m "docs: add polished README and freeze dependencies in requirements.txt"
+git push origin main
