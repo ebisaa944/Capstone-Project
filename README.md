@@ -111,11 +111,3 @@ requests==2.32.4
 sqlparse==0.5.3
 tzdata==2025.2
 urllib3==2.5.0
-🚀 One-Step Git Commit & Push
-Run these commands to stage, commit, and push everything together:
-
-bash
-Copy code
-git add README.md requirements.txt
-git commit -m "docs: add polished README and freeze dependencies in requirements.txt"
-git push origin main
