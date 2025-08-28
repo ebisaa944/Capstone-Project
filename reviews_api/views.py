@@ -108,7 +108,14 @@ class MovieViewSet(viewsets.ModelViewSet):
                     serializer.validated_data['release_year'] = int(match.group(0)) if match else None
 
                 serializer.validated_data['genre'] = movie_data.get('Genre')
-                serializer.validated_data['director'] = movie_data.get('Director')
+                
+                # --- FIX FOR "N/A" DIRECTOR ---
+                # Check for "N/A" from the API and set to None if found
+                director_data = movie_data.get('Director')
+                if director_data == 'N/A':
+                    serializer.validated_data['director'] = None
+                else:
+                    serializer.validated_data['director'] = director_data
                 
                 # Save the movie with the validated and enriched data.
                 serializer.save()
