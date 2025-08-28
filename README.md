@@ -5,86 +5,123 @@
 ![Django](https://img.shields.io/badge/Django-5.2-green.svg)  
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-A Django REST Framework-based API that allows users to **create, read, update, and delete movie reviews**.  
-It integrates with the OMDB API to fetch movie details and includes **authentication, liking, comments, and advanced filtering** features.  
+A Django REST Framework-based API that allows users to create, read, update, and delete movie reviews.
+It integrates with the OMDB API to fetch movie details and includes authentication, liking, comments, and advanced filtering features.
 
----
+🚀 Features
+Authentication: Users can sign up and log in to manage their own reviews.
 
-## 🚀 Features
+Movie Management: Movies are auto-created with details fetched from the OMDB API.
 
-- **Authentication:** Users can sign up and log in to manage their own reviews.  
-- **Movie Management:** Movies are auto-created with details fetched from the OMDB API.  
-- **Reviews:** Authenticated users can create, view, update, and delete their reviews.  
-- **Engagement:** Users can like reviews and post comments.  
-- **Advanced Filtering:** Search and filter reviews by title, comment, rating, or review date.  
-- **Scalability:** Custom pagination ensures lightweight API responses.  
-- **Security:** Custom permissions ensure users can only modify their own reviews.  
+Reviews: Authenticated users can create, view, update, and delete their reviews.
 
----
+Engagement: Users can like reviews and post comments.
 
-## 🛠️ Technologies Used
+Advanced Filtering: Search and filter reviews by title, comment, rating, or review date.
 
-- **Django** – Web framework  
-- **Django REST Framework (DRF)** – API toolkit  
-- **Django-Filter** – Advanced filtering support  
-- **Requests** – HTTP client for external API calls  
+Scalability: Custom pagination ensures lightweight API responses.
 
----
+Security: Custom permissions ensure users can only modify their own reviews.
 
-## ⚙️ Installation
+🛠️ Technologies Used
+Django – Web framework
 
-Follow these steps to set up the project locally:  
+Django REST Framework (DRF) – API toolkit
 
-### 1. Clone the repository
-```bash
+Django-Filter – Advanced filtering support
+
+Requests – HTTP client for external API calls
+
+⚙️ Installation
+Follow these steps to set up the project locally:
+
+1. Clone the repository
 git clone https://github.com/ebisaa944/Capstone-Project.git
 cd Movie_Review_API
+
 2. Create and activate a virtual environment
-bash
-Copy code
 python -m venv venv
+
 On Windows:
 
-bash
-Copy code
 .\venv\Scripts\activate
+
 On macOS/Linux:
 
-bash
-Copy code
 source venv/bin/activate
+
 3. Install dependencies
-bash
-Copy code
 pip install -r requirements.txt
+
 4. Set up environment variables
 In movie_review_project/settings.py, configure your OMDB_API_KEY.
 
 5. Apply migrations
-bash
-Copy code
 python manage.py migrate
+
 6. Create a superuser
-bash
-Copy code
 python manage.py createsuperuser
+
 7. Run the development server
-bash
-Copy code
 python manage.py runserver
+
 Your API will be live at:
 👉 http://127.0.0.1:8000/
 
 📡 API Endpoints
-Endpoint	Method	Description
-/api/movies/	GET	List all movies
-/api/movies/	POST	Create a new movie from OMDB API
-/api/movies/<id>/reviews/	GET	Get all reviews for a specific movie
-/api/reviews/	GET	List all reviews (with filtering & search)
-/api/reviews/	POST	Create a new review (requires authentication)
-/api/reviews/<id>/	PUT/PATCH/DELETE	Update or delete a review
-/api/reviews/<id>/like/	POST	Like a review
-/api/users/	GET	List all users
+Endpoint
+
+Method
+
+Description
+
+/api/movies/
+
+GET
+
+List all movies
+
+/api/movies/
+
+POST
+
+Create a new movie from OMDB API
+
+/api/movies/<id>/reviews/
+
+GET
+
+Get all reviews for a specific movie
+
+/api/reviews/
+
+GET
+
+List all reviews (with filtering & search)
+
+/api/reviews/
+
+POST
+
+Create a new review (requires authentication)
+
+/api/reviews/<id>/
+
+PUT/PATCH/DELETE
+
+Update or delete a review
+
+/api/reviews/<id>/like/
+
+POST
+
+Like a review
+
+/api/users/
+
+GET
+
+List all users
 
 👨‍💻 Author
 Ebisa Achame Mihirate
@@ -92,14 +129,7 @@ Ebisa Achame Mihirate
 📜 License
 This project is licensed under the MIT License.
 
-yaml
-Copy code
-
----
-
-### 📄 Final `requirements.txt`
-
-```text
+📄 Final requirements.txt
 asgiref==3.9.1
 certifi==2025.8.3
 charset-normalizer==3.4.3
