@@ -1,9 +1,9 @@
 # In reviews_api/views.py
 
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, status, filters, generics
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,6 +12,7 @@ import re # This import was missing and is now added.
 
 from .models import User, Movie, Review, Like, Comment
 from .serializers import (
+    UserRegistrationSerializer,
     UserSerializer,
     MovieSerializer,
     MovieCreateSerializer,
@@ -23,6 +24,12 @@ from .serializers import (
 from .permissions import IsReviewOwnerOrReadOnly # Assuming this permission is defined in a separate file
 from .services import get_movie_details
 
+
+# New view for user registration.
+class UserRegistrationView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserRegistrationSerializer
+    permission_classes = [AllowAny]
 
 # Custom permission to allow only the owner to edit or delete their own objects.
 # This is a more general-purpose version than the one in your code.
@@ -170,6 +177,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
             return Response({'status': 'unliked'}, status=status.HTTP_200_OK)
         except Like.DoesNotExist:
             return Response({'status': 'not liked'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     """
