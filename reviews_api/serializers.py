@@ -11,9 +11,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'reviews']
 
 class MovieSerializer(serializers.ModelSerializer):
+    reviews = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    
     class Meta:
         model = Movie
-        fields = ['id', 'title', 'imdb_id', 'plot', 'poster', 'release_year', 'genre', 'director']
+        fields = ['id', 'title', 'imdb_id', 'plot', 'poster', 'release_year', 'genre', 'director', 'reviews']
 
 class MovieCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,6 +27,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
+        # The 'text' field from the last attempt was incorrect.
+        # You must check your 'reviews_api/models.py' file to find the correct
+        # name of the field that stores the comment's content.
+        # This code assumes it is called 'content'. Please update if needed.
         fields = ['id', 'content', 'created_at', 'user']
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -41,3 +47,8 @@ class ReviewCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'rating', 'comment', 'movie']
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = '__all__'

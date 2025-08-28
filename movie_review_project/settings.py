@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',  # Add this for token authentication
-    'django_filters',            # Add this for advanced filtering
+    'rest_framework.authtoken',
+    'django_filters',
     'reviews_api',
 ]
 
@@ -88,13 +88,15 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'reviews_api.User'
 
+
 # Configure Django Rest Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'reviews_api.pagination.StandardResultsSetPagination',
     'PAGE_SIZE': 10,
