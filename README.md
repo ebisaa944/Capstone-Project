@@ -84,17 +84,3 @@ Ebisa Achame Mihirate
 This project is licensed under the MIT License.
 
 ---
-
-### 📄 Final `requirements.txt`
-
-asgiref==3.9.1
-certifi==2025.8.3
-charset-normalizer==3.4.3
-Django==5.2.5
-django-filter==25.1
-djangorestframework==3.16.1
-idna==3.10
-requests==2.32.4
-sqlparse==0.5.3
-tzdata==2025.2
-urllib3==2.5.0
