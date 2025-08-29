@@ -79,8 +79,3 @@ Endpoint	Method	Description
 
 👨‍💻 Author
 Ebisa Achame Mihirate
-
-📜 License
-This project is licensed under the MIT License.
-
----
