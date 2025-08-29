@@ -63,7 +63,8 @@ python manage.py createsuperuser
 
 7. Run the development server
 python manage.py runserver
-Your API will be live at:
+
+API will be live at:
 👉 http://127.0.0.1:8000/
 
 📡 API Endpoints
