@@ -42,9 +42,10 @@ cd Movie_Review_API
 
 2. Create and activate a virtual environment
 python -m venv venv
-On Windows:
 
+On Windows:
 .\venv\Scripts\activate
+
 On macOS/Linux:
 source venv/bin/activate
 
