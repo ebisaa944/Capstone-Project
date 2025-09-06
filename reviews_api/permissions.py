@@ -1,28 +1,35 @@
 from rest_framework.permissions import BasePermission, IsAuthenticatedOrReadOnly, SAFE_METHODS
 
+
 class IsUserOrAdmin(BasePermission):
     """
-    Object-level permission to allow a user to view/edit their own profile
-    or if the user is a superuser.
+    Permission that grants access if the requesting user is:
+    - A superuser (full access), or
+    - Accessing their own user profile.
     """
+
     def has_object_permission(self, request, view, obj):
-        # A superuser can access any object.
-        if request.user.is_superuser:
+        # Superusers have unrestricted access
+        if request.user and request.user.is_superuser:
             return True
-        
-        # All other users can only access their own profile.
+
+        # Regular users can only access their own profile
         return obj == request.user
 
 
 class IsOwnerOrReadOnly(IsAuthenticatedOrReadOnly):
     """
-    Object-level permission to only allow owners of an object to edit it.
-    Assumes the model instance has a 'user' attribute that links it to the User model.
+    Permission that allows:
+    - Read-only access to any authenticated user, and
+    - Write access (PUT, PATCH, DELETE) only to the owner of the object.
+
+    Assumes the model instance has a `user` attribute linking it to the User model.
     """
+
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any authenticated request.
+        # Safe methods (GET, HEAD, OPTIONS) are always allowed
         if request.method in SAFE_METHODS:
             return True
-        
-        # Write permissions (PUT, DELETE) are only allowed to the owner of the object.
-        return obj.user == request.user
+
+        # Write permissions only allowed for the owner of the object
+        return hasattr(obj, "user") and obj.user == request.user

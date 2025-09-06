@@ -4,19 +4,18 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-# We extend the AbstractUser model to potentially add custom fields in the future.
 class User(AbstractUser):
-    """Custom user model."""
+    """Custom user model with flexibility for future extensions."""
     pass
 
 
 class Movie(models.Model):
     """
-    Model for storing movie details.
-    The data for these fields will be auto-populated from the OMDB API.
+    Stores movie details.
+    Data for these fields may be auto-populated from the OMDB API.
     """
     title = models.CharField(max_length=255)
-    release_year = models.IntegerField(null=True, blank=True)
+    release_year = models.PositiveIntegerField(null=True, blank=True)
     imdb_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
     plot = models.TextField(null=True, blank=True)
     poster = models.URLField(null=True, blank=True)
@@ -29,53 +28,54 @@ class Movie(models.Model):
 
 class Review(models.Model):
     """
-    Model for user reviews of a movie.
-    Each review is linked to a user and a movie.
+    User reviews of movies.
+    Each review is linked to one user and one movie.
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="reviews")
     rating = models.DecimalField(
-        max_digits=3, 
-        decimal_places=1, 
-        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)]
+        max_digits=3,
+        decimal_places=1,
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
+        help_text="Rating must be between 0.0 and 5.0",
     )
-    # Renamed this field to 'review_text' to avoid confusion with the 'Comment' model.
     review_text = models.TextField()
     review_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Ensures a user can only review a specific movie once.
-        unique_together = ('user', 'movie')
-        ordering = ['-review_date']
+        unique_together = ("user", "movie")  # user can only review a movie once
+        ordering = ["-review_date"]
 
     def __str__(self):
-        return f"{self.user.username}'s review of {self.movie.title}"
+        return f"{self.user.username} → {self.movie.title}"
 
 
 class Like(models.Model):
     """
-    Model to track which users have liked which reviews.
+    Tracks which users have liked which reviews.
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="likes")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Prevents a user from liking the same review more than once.
-        unique_together = ('user', 'review')
+        unique_together = ("user", "review")  # one like per user per review
 
     def __str__(self):
-        return f"{self.user.username} likes {self.review.id}"
+        return f"{self.user.username} liked review {self.review.id}"
 
 
 class Comment(models.Model):
     """
-    Model for comments on reviews.
+    Comments made by users on reviews.
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="comments")
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
-        return f"Comment by {self.user.username} on review {self.review.id}"
+        return f"{self.user.username} on review {self.review.id}"
