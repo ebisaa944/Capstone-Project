@@ -39,7 +39,8 @@ class Review(models.Model):
         decimal_places=1, 
         validators=[MinValueValidator(0.0), MaxValueValidator(5.0)]
     )
-    comment = models.TextField()
+    # Renamed this field to 'review_text' to avoid confusion with the 'Comment' model.
+    review_text = models.TextField()
     review_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -1,18 +1,22 @@
-# reviews_api/serializers.py
-
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User, Movie, Review, Like, Comment
+from django.contrib.auth import get_user_model
+from .models import Movie, Review, Like, Comment
+import re
+
+User = get_user_model()
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """
     Serializer for handling user registration.
     """
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password = serializers.CharField(write_only=True, required=True)
+    password_confirmation = serializers.CharField(write_only=True, required=True)
     
     class Meta:
         model = User
-        fields = ('username', 'email', 'password')
+        fields = ('username', 'email', 'password', 'password_confirmation')
         extra_kwargs = {
             'email': {'required': True},
         }
@@ -22,7 +26,34 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
+    def validate(self, data):
+        if data['password'] != data['password_confirmation']:
+            raise serializers.ValidationError("Passwords do not match.")
+
+        password = data.get('password')
+        
+        if len(password) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+
+        if not re.search(r'[a-z]', password):
+            raise serializers.ValidationError("Password must contain at least one lowercase letter.")
+        
+        uppercase_count = sum(1 for c in password if c.isupper())
+        if uppercase_count < 2:
+            raise serializers.ValidationError("Password must contain at least two uppercase letters.")
+
+        if not re.search(r'\d', password):
+            raise serializers.ValidationError("Password must contain at least one number.")
+
+        special_characters = r'[!@#$%^&*()-+?_=,<>/]'
+        if not re.search(special_characters, password):
+            raise serializers.ValidationError("Password must contain at least one special character.")
+
+        return data
+
     def create(self, validated_data):
+        # We pop the password_confirmation field before creating the user
+        validated_data.pop('password_confirmation')
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -73,6 +104,7 @@ class MovieSerializer(serializers.ModelSerializer):
         # Now we use 'directors' instead of 'director' in the fields.
         fields = ['id', 'title', 'imdb_id', 'plot', 'poster', 'release_year', 'genre', 'directors', 'reviews']
 
+
 class CommentSerializer(serializers.ModelSerializer):
     """
     Serializer for the Comment model.
@@ -98,17 +130,17 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'rating', 'comment', 'review_date', 'user', 'movie', 'comments']
+        fields = ['id', 'rating', 'review_text', 'review_date', 'user', 'movie', 'comments']
         read_only_fields = ['review_date']
 
 class ReviewCreateUpdateSerializer(serializers.ModelSerializer):
     """
     A separate serializer for creating and updating reviews,
-    only requiring the movie, rating, and comment fields.
+    only requiring the movie, rating, and review_text fields.
     """
     class Meta:
         model = Review
-        fields = ['id', 'rating', 'comment', 'movie']
+        fields = ['id', 'rating', 'review_text', 'movie']
 
 class LikeSerializer(serializers.ModelSerializer):
     """
