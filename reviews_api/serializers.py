@@ -73,6 +73,33 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'reviews']
 
+
+# ---
+# New Password Change Serializer
+# ---
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """
+    Serializer for password change requests.
+    """
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+    confirm_password = serializers.CharField(required=True, write_only=True)
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError({"confirm_password": "New passwords must match."})
+        return data
+
+
+# ---
+# Movie, Review, and Comment Serializers
+# ---
+
 class MovieCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating a new Movie.
@@ -115,7 +142,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        # The field name for the comment's text is 'content', not 'comment'.
+        # The field name for the comment's text is 'content'.
         # We also add the 'review' field to show which review the comment belongs to.
         fields = ['id', 'content', 'created_at', 'user', 'review']
 
@@ -130,16 +157,18 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
+        # 'review_text' is now used to match the updated Review model.
         fields = ['id', 'rating', 'review_text', 'review_date', 'user', 'movie', 'comments']
         read_only_fields = ['review_date']
 
 class ReviewCreateUpdateSerializer(serializers.ModelSerializer):
     """
     A separate serializer for creating and updating reviews,
-    only requiring the movie, rating, and review_text fields.
+    only requiring the movie, rating, and comment fields.
     """
     class Meta:
         model = Review
+        # 'review_text' is now used to match the updated Review model.
         fields = ['id', 'rating', 'review_text', 'movie']
 
 class LikeSerializer(serializers.ModelSerializer):

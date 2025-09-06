@@ -1,7 +1,9 @@
-from rest_framework import viewsets, status, filters, generics
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+from rest_framework import viewsets, mixins, status, filters, generics
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, BasePermission
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, BasePermission, IsAuthenticated
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
@@ -18,61 +20,27 @@ from .serializers import (
     ReviewCreateUpdateSerializer,
     LikeSerializer,
     CommentSerializer,
+    ChangePasswordSerializer,
 )
 from .services import get_movie_details
-
-
-# Custom permission to allow users to view their own profile or if they are an admin.
-class IsUserOrAdmin(BasePermission):
-    """
-    Object-level permission to allow a user to view/edit their own profile
-    or if the user is a superuser.
-    """
-    def has_object_permission(self, request, view, obj):
-        # A superuser can access any object.
-        if request.user.is_superuser:
-            return True
-        
-        # All other users can only access their own profile.
-        return obj == request.user
-
-
-# Custom permission to allow only the owner to edit or delete their own objects.
-class IsOwnerOrReadOnly(IsAuthenticatedOrReadOnly):
-    """
-    Object-level permission to only allow owners of an object to edit it.
-    Assumes the model instance has a 'user' attribute that links it to the User model.
-    """
-    def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any authenticated request.
-        if request.method in ['GET', 'HEAD', 'OPTIONS']:
-            return True
-        
-        # Write permissions (POST, PUT, DELETE) are only allowed to the owner of the object.
-        return obj.user == request.user
+from .pagination import StandardResultsSetPagination
+from .permissions import IsOwnerOrReadOnly, IsUserOrAdmin
 
 
 # The root of the Movie Review API, providing a list of available endpoints.
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 @permission_classes([AllowAny])
 def api_root(request, format=None):
     """
     This is the API root, providing a discoverable list of all main API endpoints.
-    It also serves as a registration endpoint for new users.
     """
-    if request.method == 'POST':
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
     response_data = {
         'users': reverse('user-list', request=request),
         'movies': reverse('movie-list', request=request),
         'reviews': reverse('review-list', request=request),
         'comments': reverse('comment-list', request=request),
-        'register': reverse('user-register', request=request, format=format)
+        'register': reverse('user-register', request=request, format=format),
+        'change-password': reverse('change-password', request=request, format=format),
     }
     return Response(response_data)
 
@@ -94,7 +62,8 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, IsUserOrAdmin]
+    permission_classes = [IsAuthenticated, IsUserOrAdmin]
+    pagination_class = StandardResultsSetPagination
 
 
 class MovieViewSet(viewsets.ModelViewSet):
@@ -106,6 +75,7 @@ class MovieViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
     search_fields = ['title', 'imdb_id', 'genre', 'director', 'plot']
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = StandardResultsSetPagination
     
     def get_serializer_class(self):
         """
@@ -178,8 +148,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['rating', 'movie__title']
-    search_fields = ['movie__title', 'comment']
+    search_fields = ['movie__title', 'review_text']
     ordering_fields = ['rating', 'review_date']
+    pagination_class = StandardResultsSetPagination
 
     def get_serializer_class(self):
         """
@@ -210,9 +181,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
         user = request.user
         try:
             Like.objects.create(user=user, review=review)
-            return Response({'status': 'liked'}, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'status': 'already liked'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': 'liked'}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
     def unlike(self, request, pk=None):
@@ -247,10 +218,52 @@ class CommentViewSet(viewsets.ModelViewSet):
     """
     queryset = Comment.objects.all().order_by('created_at')
     serializer_class = CommentSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     
     def perform_create(self, serializer):
         """
         This method is called when a new comment is created.
+        It automatically associates the comment with the current authenticated user.
         """
-        serializer.save(user=self.request.user)
+        review_id = self.request.data.get('review')
+        if not review_id:
+            raise serializers.ValidationError({'review': 'This field is required.'})
+        
+        try:
+            review = Review.objects.get(id=review_id)
+        except Review.DoesNotExist:
+            raise serializers.ValidationError({'review': 'Review with this ID does not exist.'})
+
+        serializer.save(user=self.request.user, review=review)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    """
+    An endpoint for changing a user's password.
+    Requires the user to be authenticated.
+    """
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            # Check old password
+            if not self.object.check_password(serializer.data.get("old_password")):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+            # set_password also hashes the password that the user will get
+            self.object.set_password(serializer.data.get("new_password"))
+            self.object.save()
+            response = {
+                'status': 'success',
+                'code': status.HTTP_200_OK,
+                'message': 'Password updated successfully',
+                'data': None
+            }
+            return Response(response)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
